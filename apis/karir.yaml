@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Karir API
+  description: API for career portal and job management system
+  version: 1.0.0
+  contact:
+    name: Novian Andika
+    email: novian.andika@bpddiy.co.id
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://career.fleetime.my.id/karir
+    description: Production server
+
+tags:
+  - name: Cron
+    description: Scheduled tasks and cron jobs.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    CronResponse:
+      type: object
+      description: Response schema for cron operations.
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          description: The status of the operation. Can be "success" or "error".
+        message:
+          type: string
+          description: A detailed message about the result of the operation.
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp when the operation was completed.
+        affected_rows:
+          type: integer
+          description: The number of rows affected by the operation.
+
+      required:
+        - status
+        - message
+        - timestamp
+
+    Error:
+      type: object
+      description: Response schema for errors.
+      properties:
+        status:
+          type: string
+          enum: [error]
+          description: Always "error" for failed operations.
+        message:
+          type: string
+          description: A message providing more details about the error.
+
+      required:
+        - status
+        - message
+
+paths:
+  /rekrutmen/cron/close-lowongan:
+    get:
+      tags:
+        - Cron
+      summary: Close expired job postings
+      description: Automatically closes job postings that have passed their end date.
+      operationId: cronCloseLowongan
+      security:
+        - apiKeyAuth: [] # Defined security at the operation level
+      responses:
+        "200":
+          description: Successfully processed expired job postings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CronResponse"
+              examples:
+                noExpired:
+                  summary: No expired postings
+                  value:
+                    status: success
+                    message: Tidak ada lowongan aktif yang melewati periode_akhir
+                    timestamp: "2024-01-20 14:30:00"
+                    affected_rows: 0
+                success:
+                  summary: Closed expired postings
+                  value:
+                    status: success
+                    message: Berhasil menutup 2 lowongan yang sudah melewati periode_akhir
+                    timestamp: "2024-01-20 14:30:00"
+                    affected_rows: 2
+        "500":
+          description: Server error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                status: error
+                message: Gagal menutup lowongan yang kadaluarsa
+        "401":
+          description: Unauthorized - Invalid or missing API key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                status: error
+                message: Unauthorized access
