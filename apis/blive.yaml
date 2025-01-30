@@ -1,0 +1,25 @@
+openapi: 3.1.0
+info:
+  title: Blive API
+  description: API Endpoints for Blive
+  version: 1.0.0
+  contact:
+    email: novian.andika@bpddiy.co.id
+    name: Novian Andika
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: "https://api.blive.bpddiy.co.id"
+    description: Production server
+paths:
+  /login:
+    post:
+      summary: Login to the application
+tags:
+  - name: Login
+    description: Login API
+  - name: Module / Category
+    description: Module / Category API
+security:
+  - bearerAuth: []
